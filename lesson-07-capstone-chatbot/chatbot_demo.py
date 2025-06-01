@@ -77,6 +77,17 @@ class ChatbotDemo:
                 ]
             },
             {
+                "name": "Advanced Features",
+                "description": "Test advanced file operations",
+                "commands": [
+                    "Search for files containing the word 'project'",
+                    "Get detailed information about welcome.md",
+                    "Create a backup of my todo.md file",
+                    "Copy welcome.md to a new file called guide.md",
+                    "Show me files modified in the last 3 days"
+                ]
+            },
+            {
                 "name": "Security Testing",
                 "description": "Test security constraints",
                 "commands": [
@@ -241,6 +252,10 @@ class ChatbotDemo:
         
         print("\n⚙️  INTERMEDIATE FUNCTIONS:")
         for func in info['intermediate_functions']:
+            print(f"  • {func}")
+        
+        print("\n🚀 ADVANCED FUNCTIONS:")
+        for func in info['advanced_functions']:
             print(f"  • {func}")
         
         print("\n📋 ALL AVAILABLE FUNCTIONS:")

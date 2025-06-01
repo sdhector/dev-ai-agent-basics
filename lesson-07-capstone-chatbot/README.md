@@ -46,6 +46,13 @@ By completing this capstone, you will:
 7. **`rename_file`** - Change filename
 8. **`move_file`** - Change file location
 
+### Advanced Functions (5)
+9. **`search_files`** - Find files by content or filename
+10. **`copy_file`** - Duplicate files to new locations
+11. **`get_file_info`** - Analyze file statistics and structure
+12. **`create_backup`** - Create timestamped backup copies
+13. **`list_recent_files`** - Show recently modified files
+
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
@@ -207,12 +214,13 @@ After completing the basic implementation, consider adding:
 
 You've successfully completed the capstone when:
 
-✅ **All 8 functions work correctly**  
+✅ **All 13 functions work correctly**  
 ✅ **Security constraints are enforced**  
 ✅ **LLM makes intelligent function choices**  
 ✅ **Natural language interface feels intuitive**  
 ✅ **Error handling is robust and helpful**  
 ✅ **File operations are safe and reliable**  
+✅ **Advanced features enhance productivity**  
 
 ## 🚀 Ready to Build?
 
