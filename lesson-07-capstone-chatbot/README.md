@@ -72,6 +72,9 @@ python chatbot_demo.py
 "Read the welcome.md file"
 "Create a folder called 'projects'"
 "Move notes.md to the projects folder"
+"Search for files containing 'project'"
+"Get detailed information about welcome.md"
+"Create a backup of my notes file"
 ```
 
 ## 🔧 Implementation Details
@@ -171,6 +174,12 @@ Bot: ❌ Access denied: Path outside documents folder
 - Natural language interface
 - Clear success/error messages
 - Helpful suggestions for next actions
+
+### 5. **Enhanced Debugging**
+- Detailed function execution logs
+- Formatted output display for each function type
+- Clear status indicators and error messages
+- Real-time visibility into function results
 
 ## 🧪 Testing Your Implementation
 
