@@ -8,6 +8,10 @@ No fancy formatting - just the raw JSON so you can see what's happening.
 import json
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Simple function that could be called
 def add_numbers(a: float, b: float) -> float:
@@ -96,6 +100,7 @@ def demo_raw_function_call():
 
 if __name__ == "__main__":
     if not os.getenv("OPENAI_API_KEY"):
-        print("Set OPENAI_API_KEY environment variable first!")
+        print("❌ Please set OPENAI_API_KEY in your .env file")
+        print("   Create a .env file with: OPENAI_API_KEY=your-api-key-here")
     else:
         demo_raw_function_call() 

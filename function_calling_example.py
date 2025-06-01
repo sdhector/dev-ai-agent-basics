@@ -14,10 +14,14 @@ a JSON specification of what function to call, and YOUR CODE executes it.
 import json
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Initialize OpenAI client
 client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")  # Set your API key as environment variable
+    api_key=os.getenv("OPENAI_API_KEY")  # Set your API key in .env file
 )
 
 # ============================================================================
@@ -268,7 +272,8 @@ def main():
 if __name__ == "__main__":
     # Check if API key is set
     if not os.getenv("OPENAI_API_KEY"):
-        print("❌ Please set OPENAI_API_KEY environment variable")
-        print("   Example: export OPENAI_API_KEY='your-api-key-here'")
+        print("❌ Please set OPENAI_API_KEY in your .env file")
+        print("   Create a .env file with: OPENAI_API_KEY=your-api-key-here")
+        print("   The .env file is already in .gitignore for security")
     else:
         main() 
