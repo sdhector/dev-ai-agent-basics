@@ -77,7 +77,44 @@ python chatbot_demo.py
 "Create a backup of my notes file"
 ```
 
+### 4. Model Management Commands
+```
+"models" - Show available AI models and costs
+"switch to gpt-4o-mini" - Change to cost-efficient model
+"switch to gpt-4-turbo" - Change to high-performance model
+"model info" - Show current model details and costs
+```
+
 ## 🔧 Implementation Details
+
+### Model Selection & Cost Optimization
+```python
+# Available models with cost information
+AVAILABLE_MODELS = {
+    "gpt-4o-mini": {
+        "name": "GPT-4o Mini",
+        "input_cost": 0.15,  # per million tokens
+        "output_cost": 0.60,  # per million tokens
+        "context_window": "128K",
+        "description": "Best cost-efficient option",
+        "recommended": True
+    },
+    "gpt-3.5-turbo": {
+        "name": "GPT-3.5 Turbo", 
+        "input_cost": 0.50,
+        "output_cost": 1.50,
+        "context_window": "16K",
+        "description": "Legacy model",
+        "recommended": False
+    }
+}
+
+# Initialize with cost-efficient model
+chatbot = MarkdownChatbot(model="gpt-4o-mini")
+
+# Switch models for cost optimization
+chatbot.switch_model("gpt-4o-mini")  # Most cost-efficient
+```
 
 ### Path Security
 ```python
@@ -155,27 +192,33 @@ Bot: ❌ Access denied: Path outside documents folder
 
 ## 🔍 Key Features
 
-### 1. **Intelligent File Operations**
+### 1. **Cost-Efficient AI Models**
+- **GPT-4o Mini** as default (70% cheaper than GPT-4)
+- Real-time model switching for cost optimization
+- Transparent pricing display ($0.15/$0.60 per million tokens)
+- Smart model recommendations based on task complexity
+
+### 2. **Intelligent File Operations**
 - LLM decides when to use file functions based on user intent
 - Natural language commands translate to function calls
 - Context-aware responses
 
-### 2. **Security First**
+### 3. **Security First**
 - All paths validated against sandbox folder
 - No access to system files or parent directories
 - Safe error handling for invalid operations
 
-### 3. **Markdown Focus**
+### 4. **Markdown Focus**
 - Optimized for markdown file operations
 - Content formatting and structure awareness
 - Easy integration with documentation workflows
 
-### 4. **User-Friendly**
+### 5. **User-Friendly**
 - Natural language interface
 - Clear success/error messages
 - Helpful suggestions for next actions
 
-### 5. **Enhanced Debugging**
+### 6. **Enhanced Debugging**
 - Detailed function execution logs
 - Formatted output display for each function type
 - Clear status indicators and error messages

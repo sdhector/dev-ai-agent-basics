@@ -20,6 +20,42 @@ from file_operations import (
 # Load environment variables
 load_dotenv()
 
+# Available OpenAI models with their details
+AVAILABLE_MODELS = {
+    "gpt-4o-mini": {
+        "name": "GPT-4o Mini",
+        "input_cost": 0.15,  # per million tokens
+        "output_cost": 0.60,  # per million tokens
+        "context_window": "128K",
+        "description": "Best cost-efficient option - excellent performance at low cost",
+        "recommended": True
+    },
+    "gpt-3.5-turbo": {
+        "name": "GPT-3.5 Turbo",
+        "input_cost": 0.50,  # per million tokens (legacy pricing)
+        "output_cost": 1.50,  # per million tokens (legacy pricing)
+        "context_window": "16K",
+        "description": "Legacy model - consider upgrading to GPT-4o Mini",
+        "recommended": False
+    },
+    "gpt-4-turbo": {
+        "name": "GPT-4 Turbo",
+        "input_cost": 10.00,  # per million tokens
+        "output_cost": 30.00,  # per million tokens
+        "context_window": "128K",
+        "description": "High performance but expensive - use for complex tasks only",
+        "recommended": False
+    },
+    "gpt-4": {
+        "name": "GPT-4",
+        "input_cost": 30.00,  # per million tokens
+        "output_cost": 60.00,  # per million tokens
+        "context_window": "8K",
+        "description": "Most expensive option - use only when maximum quality needed",
+        "recommended": False
+    }
+}
+
 class MarkdownChatbot:
     """
     A chatbot that can manage markdown files using OpenAI function calling.
@@ -28,17 +64,25 @@ class MarkdownChatbot:
     - Secure file operations within documents/ folder only
     - Natural language interface for file management
     - Intelligent function selection based on user intent
+    - Model selection for cost optimization
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o-mini"):
         """
         Initialize the chatbot.
         
         Args:
             api_key: OpenAI API key (optional, will use environment variable if not provided)
+            model: OpenAI model to use (default: gpt-4o-mini for best cost efficiency)
         """
         self.client = OpenAI(api_key=api_key or os.getenv("OPENAI_API_KEY"))
+        self.model = model
         self.conversation_history = []
+        
+        # Validate model
+        if model not in AVAILABLE_MODELS:
+            print(f"⚠️  Warning: Model '{model}' not recognized. Using gpt-4o-mini instead.")
+            self.model = "gpt-4o-mini"
         
         # Initialize with system message
         self.conversation_history.append({
@@ -46,10 +90,58 @@ class MarkdownChatbot:
             "content": self._get_system_prompt()
         })
         
+        model_info = AVAILABLE_MODELS[self.model]
         print("🤖 Markdown Chatbot initialized!")
         print(f"📁 Working directory: {DOCUMENTS_ROOT}")
         print(f"🛠️ Available functions: {len(AVAILABLE_FUNCTIONS)}")
+        print(f"🧠 Model: {model_info['name']} ({self.model})")
+        print(f"💰 Cost: ${model_info['input_cost']:.2f}/${model_info['output_cost']:.2f} per million tokens")
+        if model_info['recommended']:
+            print("✅ Recommended model for cost efficiency")
     
+    def get_available_models(self) -> Dict:
+        """Get information about available models."""
+        return AVAILABLE_MODELS
+    
+    def switch_model(self, new_model: str) -> bool:
+        """
+        Switch to a different OpenAI model.
+        
+        Args:
+            new_model: Model identifier (e.g., 'gpt-4o-mini', 'gpt-4-turbo')
+            
+        Returns:
+            True if switch was successful, False otherwise
+        """
+        if new_model not in AVAILABLE_MODELS:
+            print(f"❌ Model '{new_model}' not available.")
+            print("Available models:")
+            for model_id, info in AVAILABLE_MODELS.items():
+                status = "✅ RECOMMENDED" if info['recommended'] else ""
+                print(f"  • {model_id}: {info['name']} - ${info['input_cost']:.2f}/${info['output_cost']:.2f} per M tokens {status}")
+            return False
+        
+        old_model = self.model
+        self.model = new_model
+        model_info = AVAILABLE_MODELS[new_model]
+        
+        print(f"🔄 Switched from {AVAILABLE_MODELS[old_model]['name']} to {model_info['name']}")
+        print(f"💰 New cost: ${model_info['input_cost']:.2f}/${model_info['output_cost']:.2f} per million tokens")
+        if model_info['recommended']:
+            print("✅ You're now using the recommended cost-efficient model!")
+        elif not model_info['recommended'] and new_model != "gpt-4o-mini":
+            print("💡 Tip: Consider 'gpt-4o-mini' for the best cost efficiency")
+        
+        return True
+    
+    def get_model_info(self) -> Dict:
+        """Get information about the currently selected model."""
+        return {
+            "current_model": self.model,
+            "model_info": AVAILABLE_MODELS[self.model],
+            "available_models": AVAILABLE_MODELS
+        }
+
     def _get_system_prompt(self) -> str:
         """Get the system prompt that defines the chatbot's behavior."""
         function_list = "\n".join([f"- {name}" for name in AVAILABLE_FUNCTIONS.keys()])
@@ -241,7 +333,7 @@ Remember: You are a file management assistant focused on helping users organize 
         try:
             # Call OpenAI with function calling enabled
             response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model=self.model,
                 messages=self.conversation_history,
                 functions=FUNCTION_SCHEMAS,
                 function_call="auto",
@@ -280,7 +372,7 @@ Remember: You are a file management assistant focused on helping users organize 
                 
                 # Get the final response from the model
                 final_response = self.client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model=self.model,
                     messages=self.conversation_history,
                     temperature=0.7
                 )
@@ -310,7 +402,9 @@ Remember: You are a file management assistant focused on helping users organize 
             "total_messages": len(self.conversation_history),
             "user_messages": len([msg for msg in self.conversation_history if msg["role"] == "user"]),
             "assistant_messages": len([msg for msg in self.conversation_history if msg["role"] == "assistant"]),
-            "function_calls": len([msg for msg in self.conversation_history if msg["role"] == "function"])
+            "function_calls": len([msg for msg in self.conversation_history if msg["role"] == "function"]),
+            "current_model": self.model,
+            "model_info": AVAILABLE_MODELS[self.model]
         }
 
     def reset_conversation(self):
@@ -333,6 +427,10 @@ def main():
     print("  • 'Create a file called notes.md'")
     print("  • 'Read the welcome.md file'")
     print("  • 'Create a folder called projects'")
+    print("\nSpecial commands:")
+    print("  • 'models' - Show available AI models")
+    print("  • 'switch to gpt-4o-mini' - Change AI model")
+    print("  • 'model info' - Show current model details")
     print("\nType 'quit' to exit, 'reset' to start over, or 'help' for more info.\n")
     
     # Check for API key
@@ -354,11 +452,41 @@ def main():
             elif user_input.lower() == 'reset':
                 chatbot.reset_conversation()
                 continue
+            elif user_input.lower() == 'models':
+                print("\n🧠 AVAILABLE MODELS:")
+                for model_id, info in chatbot.get_available_models().items():
+                    current = "← CURRENT" if model_id == chatbot.model else ""
+                    recommended = "✅ RECOMMENDED" if info['recommended'] else ""
+                    print(f"  • {model_id}: {info['name']}")
+                    print(f"    💰 ${info['input_cost']:.2f}/${info['output_cost']:.2f} per million tokens")
+                    print(f"    📏 {info['context_window']} context")
+                    print(f"    📝 {info['description']} {recommended} {current}")
+                    print()
+                continue
+            elif user_input.lower().startswith('switch to '):
+                model_name = user_input[10:].strip()
+                chatbot.switch_model(model_name)
+                continue
+            elif user_input.lower() in ['model info', 'model']:
+                info = chatbot.get_model_info()
+                model_info = info['model_info']
+                print(f"\n🧠 CURRENT MODEL: {model_info['name']} ({info['current_model']})")
+                print(f"💰 Cost: ${model_info['input_cost']:.2f}/${model_info['output_cost']:.2f} per million tokens")
+                print(f"📏 Context: {model_info['context_window']}")
+                print(f"📝 {model_info['description']}")
+                if model_info['recommended']:
+                    print("✅ This is the recommended cost-efficient model!")
+                print()
+                continue
             elif user_input.lower() == 'help':
                 print("\n📚 HELP:")
                 print("Available commands:")
                 for func_name in AVAILABLE_FUNCTIONS.keys():
                     print(f"  • {func_name}")
+                print("\nModel commands:")
+                print("  • 'models' - Show all available AI models")
+                print("  • 'switch to MODEL_NAME' - Change AI model")
+                print("  • 'model info' - Show current model details")
                 print("\nExample requests:")
                 print("  • 'Show me all my files'")
                 print("  • 'Create a new file with some content'")
